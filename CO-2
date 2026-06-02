@@ -1,0 +1,109 @@
+import java.util.*;
+
+class Candidate {
+    int id;
+    String name;
+    String skill;
+
+    Candidate(int id, String name, String skill) {
+        this.id = id;
+        this.name = name;
+        this.skill = skill;
+    }
+
+    @SuppressWarnings("override")
+    public String toString() {
+        return "ID: " + id +
+               ", Name: " + name +
+               ", Skill: " + skill;
+    }
+}
+
+class BPlusTree {
+
+    @SuppressWarnings("FieldMayBeFinal")
+    private TreeMap<Integer, Candidate> records;
+
+    public BPlusTree() {
+        records = new TreeMap<>();
+    }
+    public void insert(Candidate candidate) {
+        records.put(candidate.id, candidate);
+    }
+    public Candidate search(int id) {
+        return records.get(id);
+    }
+    public void delete(int id) {
+        records.remove(id);
+    }
+    public void rangeQuery(int startId, int endId) {
+
+        SortedMap<Integer, Candidate> range =
+                records.subMap(startId, true, endId, true);
+
+        System.out.println(
+            "\nCandidates between IDs "
+            + startId + " and " + endId + ":"
+        );
+
+        for (Candidate c : range.values()) {
+            System.out.println(c);
+        }
+    }
+    public void display() {
+
+        System.out.println("\nAll Candidates:");
+
+        for (Candidate c : records.values()) {
+            System.out.println(c);
+        }
+    }
+}
+
+public class CO2 {
+
+    public static void main(String[] args) {
+
+        BPlusTree candidateTree = new BPlusTree();
+
+        // INSERT
+        candidateTree.insert(
+                new Candidate(101, "Neha", "Java"));
+
+        candidateTree.insert(
+                new Candidate(104, "Nidheesha", "Python"));
+
+        candidateTree.insert(
+                new Candidate(108, "Pradeepthi", "AI"));
+
+        candidateTree.insert(
+                new Candidate(112, "Nitya", "Java"));
+
+        candidateTree.insert(
+                new Candidate(118, "Vedhitha", "Cloud"));
+
+        candidateTree.insert(
+                new Candidate(125, "Manasvi", "Data Science"));
+
+        candidateTree.display();
+
+        System.out.println("\nSearch Candidate ID 108:");
+
+        Candidate result =
+                candidateTree.search(108);
+
+        if(result != null)
+            System.out.println(result);
+        else
+            System.out.println("Not Found");
+
+        candidateTree.rangeQuery(104, 118);
+
+        candidateTree.delete(112);
+
+        System.out.println(
+                "\nAfter Deleting Candidate ID 112");
+
+        candidateTree.display();
+    }
+}
