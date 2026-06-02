@@ -1,0 +1,285 @@
+class Candidate {
+    int id;
+    String name;
+    String skill;
+    Candidate left, right;
+
+    Candidate(int id, String name, String skill) {
+        this.id = id;
+        this.name = name;
+        this.skill = skill;
+    }
+}
+class Job {
+    int jobId;
+    String title;
+    String requiredSkill;
+    int height;
+    Job left, right;
+
+    Job(int jobId, String title, String requiredSkill) {
+        this.jobId = jobId;
+        this.title = title;
+        this.requiredSkill = requiredSkill;
+        this.height = 1;
+    }
+}
+class CandidateBST {
+    Candidate root;
+
+    Candidate insert(Candidate root, int id, String name, String skill) {
+        if (root == null)
+            return new Candidate(id, name, skill);
+
+        if (id < root.id)
+            root.left = insert(root.left, id, name, skill);
+        else if (id > root.id)
+            root.right = insert(root.right, id, name, skill);
+
+        return root;
+    }
+
+    Candidate search(Candidate root, int id) {
+        if (root == null || root.id == id)
+            return root;
+
+        if (id < root.id)
+            return search(root.left, id);
+
+        return search(root.right, id);
+    }
+
+    Candidate minValue(Candidate node) {
+        while (node.left != null)
+            node = node.left;
+        return node;
+    }
+
+    Candidate delete(Candidate root, int id) {
+        if (root == null)
+            return root;
+
+        if (id < root.id)
+            root.left = delete(root.left, id);
+        else if (id > root.id)
+            root.right = delete(root.right, id);
+        else {
+            if (root.left == null)
+                return root.right;
+            else if (root.right == null)
+                return root.left;
+
+            Candidate temp = minValue(root.right);
+            root.id = temp.id;
+            root.name = temp.name;
+            root.skill = temp.skill;
+
+            root.right = delete(root.right, temp.id);
+        }
+        return root;
+    }
+
+    void inorder(Candidate root) {
+        if (root != null) {
+            inorder(root.left);
+            System.out.println(
+                "Candidate ID: " + root.id +
+                " Name: " + root.name +
+                " Skill: " + root.skill
+            );
+            inorder(root.right);
+        }
+    }
+}
+class JobAVL {
+    Job root;
+
+    int height(Job n) {
+        return (n == null) ? 0 : n.height;
+    }
+
+    int getBalance(Job n) {
+        return (n == null) ? 0 : height(n.left) - height(n.right);
+    }
+
+    Job rightRotate(Job y) {
+        Job x = y.left;
+        Job t2 = x.right;
+
+        x.right = y;
+        y.left = t2;
+
+        y.height = Math.max(height(y.left), height(y.right)) + 1;
+        x.height = Math.max(height(x.left), height(x.right)) + 1;
+
+        return x;
+    }
+
+    Job leftRotate(Job x) {
+        Job y = x.right;
+        Job t2 = y.left;
+
+        y.left = x;
+        x.right = t2;
+
+        x.height = Math.max(height(x.left), height(x.right)) + 1;
+        y.height = Math.max(height(y.left), height(y.right)) + 1;
+
+        return y;
+    }
+
+    Job insert(Job node, int id, String title, String skill) {
+        if (node == null)
+            return new Job(id, title, skill);
+
+        if (id < node.jobId)
+            node.left = insert(node.left, id, title, skill);
+        else if (id > node.jobId)
+            node.right = insert(node.right, id, title, skill);
+        else
+            return node;
+
+        node.height = 1 + Math.max(height(node.left), height(node.right));
+
+        int balance = getBalance(node);
+
+        if (balance > 1 && id < node.left.jobId)
+            return rightRotate(node);
+
+        if (balance < -1 && id > node.right.jobId)
+            return leftRotate(node);
+
+        if (balance > 1 && id > node.left.jobId) {
+            node.left = leftRotate(node.left);
+            return rightRotate(node);
+        }
+
+        if (balance < -1 && id < node.right.jobId) {
+            node.right = rightRotate(node.right);
+            return leftRotate(node);
+        }
+
+        return node;
+    }
+
+    Job search(Job root, int id) {
+        if (root == null || root.jobId == id)
+            return root;
+
+        if (id < root.jobId)
+            return search(root.left, id);
+
+        return search(root.right, id);
+    }
+
+    Job minValue(Job node) {
+        while (node.left != null)
+            node = node.left;
+        return node;
+    }
+
+    Job delete(Job root, int id) {
+        if (root == null)
+            return root;
+
+        if (id < root.jobId)
+            root.left = delete(root.left, id);
+        else if (id > root.jobId)
+            root.right = delete(root.right, id);
+        else {
+            if (root.left == null || root.right == null) {
+                Job temp = (root.left != null) ? root.left : root.right;
+
+                if (temp == null)
+                    root = null;
+                else
+                    root = temp;
+            } else {
+                Job temp = minValue(root.right);
+
+                root.jobId = temp.jobId;
+                root.title = temp.title;
+                root.requiredSkill = temp.requiredSkill;
+
+                root.right = delete(root.right, temp.jobId);
+            }
+        }
+
+        if (root == null)
+            return root;
+
+        root.height = 1 + Math.max(height(root.left), height(root.right));
+
+        int balance = getBalance(root);
+
+        if (balance > 1 && getBalance(root.left) >= 0)
+            return rightRotate(root);
+
+        if (balance > 1 && getBalance(root.left) < 0) {
+            root.left = leftRotate(root.left);
+            return rightRotate(root);
+        }
+
+        if (balance < -1 && getBalance(root.right) <= 0)
+            return leftRotate(root);
+
+        if (balance < -1 && getBalance(root.right) > 0) {
+            root.right = rightRotate(root.right);
+            return leftRotate(root);
+        }
+
+        return root;
+    }
+
+    void inorder(Job root) {
+        if (root != null) {
+            inorder(root.left);
+            System.out.println(
+                "Job ID: " + root.jobId +
+                " Title: " + root.title +
+                " Skill Needed: " + root.requiredSkill
+            );
+            inorder(root.right);
+        }
+    }
+}
+public class CO1 {
+    public static void main(String[] args) {
+
+        CandidateBST candidates = new CandidateBST();
+        JobAVL jobs = new JobAVL();
+
+        candidates.root = candidates.insert(candidates.root, 101, "Neha", "Java");
+        candidates.root = candidates.insert(candidates.root, 102, "Sharanya", "Python");
+        candidates.root = candidates.insert(candidates.root, 103, "Hasini", "AI");
+
+        jobs.root = jobs.insert(jobs.root, 201, "Java Developer", "Java");
+        jobs.root = jobs.insert(jobs.root, 202, "Data Analyst", "Python");
+        jobs.root = jobs.insert(jobs.root, 203, "ML Engineer", "AI");
+
+        System.out.println("\nCandidates (BST): ");
+        candidates.inorder(candidates.root);
+
+        System.out.println("\nJobs (AVL):");
+        jobs.inorder(jobs.root);
+
+        Candidate c = candidates.search(candidates.root, 102);
+        if (c != null)
+            System.out.println("\nCandidate Found: " + c.name);
+
+        Job j = jobs.search(jobs.root, 203);
+        if (j != null)
+            System.out.println("Job Found: " + j.title);
+
+        candidates.root = candidates.delete(candidates.root, 101);
+        jobs.root = jobs.delete(jobs.root, 202);
+
+        System.out.println("\nAfter Deletion: ");
+
+        System.out.println("\nCandidates:");
+        candidates.inorder(candidates.root);
+
+        System.out.println("\nJobs:");
+        jobs.inorder(jobs.root);
+    }
+}
